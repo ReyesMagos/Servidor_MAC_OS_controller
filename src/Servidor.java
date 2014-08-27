@@ -1,11 +1,15 @@
 package javaapplication1;
 
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 
 public class Servidor {
 
