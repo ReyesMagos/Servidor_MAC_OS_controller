@@ -1,3 +1,5 @@
+package javaapplication1;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -22,6 +24,8 @@ public class Servidor {
 	private ObjectInputStream input;
 	private Socket socket;
 	private ObjectOutputStream out;
+        private String volumeValue;
+        private String url;
 
 	public Servidor(int puerto) {
 		this.puerto = puerto;
@@ -42,9 +46,9 @@ public class Servidor {
 			enviarMensaje("Servidor Conectado");
 
 			while (!done) {
-				String mensaje = (String) input.readObject();
+				String mensaje = getMessageFrontClient();
 				System.out.println("Mensaje de Cliente: " + mensaje);
-
+                                if(!mensaje.equals("")){
 				if (mensaje.equals("bye")) {
 					done = true;
 				} else if (mensaje.equals("play")) {
@@ -59,24 +63,73 @@ public class Servidor {
 					sendArtistAndTrackName();
 				} else if (mensaje.equals("back")) {
 					String[] args = { "osascript", "-e",
-							"tell app \"Spotify\" to back track" };
+							"tell app \"Spotify\" to previous track" };
 					ejecutaAppleScriptComand(args);
 					sendArtistAndTrackName();
-				}
+				}else if(mensaje.equals("volumen")){
+                                    String[] args = { "osascript", "-e",
+							"tell app \"Spotify\" to set sound volume to " + volumeValue };
+					ejecutaAppleScriptComand(args);
+                                }else if(mensaje.equalsIgnoreCase("url")){
+                                    String[] args = { "osascript", "-e",
+							"tell app \"Safari\" to active" };
+					ejecutaAppleScriptComand(args);
+                                        args = new String[]{ "osascript", "-e",
+							"tell app \"Safari\" to open location  \"" + url +"\""};
+					ejecutaAppleScriptComand(args);
+                                }else if(mensaje.equalsIgnoreCase("safariBack")){
+                                     String[] args = { "osascript", "-e",
+							"tell app \"Safari\" to do JavaScript \"history.go(-1)\" in the document of window 1"};
+					ejecutaAppleScriptComand(args);
+                                }else if(mensaje.equalsIgnoreCase("safariForward")){
+                                     String[] args = { "osascript", "-e",
+							"tell app \"Safari\" to do JavaScript \"history.go(+1)\" in the document of window 1"};
+					ejecutaAppleScriptComand(args);
+                                }else if(mensaje.equalsIgnoreCase("safariDownPage")){
+                                     String[] args = { "osascript", "-e",
+							"tell app \"Safari\" to set current tab to tab 2"};
+					ejecutaAppleScriptComand(args);
+                                }
+                            }
 			}
 
 		} catch (IOException e) {
 			System.out.println("Hubo un Error: " + e.toString());
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+                }	 finally {
 			if (socket != null)
 				socket.close();
 			if (input != null)
 				input.close();
 		}
 	}
+        
+        public String getMessageFrontClient(){
+              String orden="";
+            try{
+                String s =(String) input.readObject();
+                
+                orden=s;
+                for(int i =0;i<s.length(); i++){
+                if(Character.toString(s.charAt(i)).equals(";")){
+                    orden = s.substring(0,i);
+                    if(orden.equals("volumen")){
+                    volumeValue= s.substring(i+1,s.length()-1);
+                    	System.out.println("Volumen to " + volumeValue);
+                    }else if(orden.equals("url")){
+                        url= s.substring(i+1,s.length()-1);
+                        System.out.println("URL " + url);
+                    }
+                }
+            }
+            }catch(ClassNotFoundException e){
+                
+            }catch(IOException e){
+                
+            }
+         
+            return orden;
+            
+        }
 
 	public void sendArtistAndTrackName() {
 		String args[];
